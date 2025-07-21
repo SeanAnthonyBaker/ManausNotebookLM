@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotebookLM Automation API</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section { 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 8px; 
+            background-color: #fafafa;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 { 
+            margin-top: 0; 
+            color: #4285f4;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 10px;
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="url"], textarea { 
+            margin-bottom: 15px; 
+            padding: 10px; 
+            width: 100%; 
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button { 
+            padding: 12px 20px; 
+            margin-right: 10px; 
+            margin-bottom: 10px;
+            cursor: pointer; 
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .status-button {
+            background-color: #34a853;
+        }
+        .status-button:hover {
+            background-color: #2d8f47;
+        }
+        .close-button {
+            background-color: #ea4335;
+        }
+        .close-button:hover {
+            background-color: #d33b2c;
+        }
+        pre { 
+            background-color: #f8f9fa; 
+            padding: 15px; 
+            border: 1px solid #e9ecef; 
+            border-radius: 4px; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            border-left: 4px solid #34a853;
+            background-color: #e8f5e8;
+        }
+        .error {
+            border-left: 4px solid #ea4335;
+            background-color: #fce8e6;
+        }
+        .warning {
+            border-left: 4px solid #fbbc04;
+            background-color: #fef7e0;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .endpoint-info {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 NotebookLM Automation API</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Selenium-based automation for Google NotebookLM with Docker container support
+        </p>
+
+        <!-- Status Check -->
+        <div class="section">
+            <h2>📊 Browser Status</h2>
+            <div class="endpoint-info">
+                <strong>GET /api/status</strong> - Check the current status of the browser instance
+            </div>
+            <button class="status-button" onclick="checkStatus()">Check Status</button>
+            <pre id="status-result"></pre>
+        </div>
+
+        <!-- Open NotebookLM -->
+        <div class="section">
+            <h2>🚀 Open NotebookLM</h2>
+            <div class="endpoint-info">
+                <strong>POST /api/open_notebooklm</strong> - Opens a specific NotebookLM in headless Chrome browser
+            </div>
+            <label for="notebooklm-url">NotebookLM URL:</label>
+            <input type="url" id="notebooklm-url" name="notebooklm_url" 
+                   placeholder="https://notebooklm.google.com/notebook/..." 
+                   value="https://notebooklm.google.com/">
+            <button onclick="openNotebookLM()">Open NotebookLM</button>
+            <pre id="open-result"></pre>
+        </div>
+
+        <!-- Query NotebookLM -->
+        <div class="section">
+            <h2>💬 Query NotebookLM</h2>
+            <div class="endpoint-info">
+                <strong>POST /api/query_notebooklm</strong> - Submits a query and waits for complete response (30-60 seconds)
+            </div>
+            <label for="query-text">Your Question:</label>
+            <textarea id="query-text" name="query" 
+                      placeholder="Enter your question for NotebookLM here...">What are the main topics covered in the uploaded documents?</textarea>
+            <button onclick="queryNotebookLM()">Submit Query</button>
+            <pre id="query-result"></pre>
+        </div>
+
+        <!-- Close Browser -->
+        <div class="section">
+            <h2>🔒 Close Browser</h2>
+            <div class="endpoint-info">
+                <strong>POST /api/close_browser</strong> - Closes the Chrome driver and cleans up resources
+            </div>
+            <button class="close-button" onclick="closeBrowser()">Close Browser</button>
+            <pre id="close-result"></pre>
+        </div>
+
+        <!-- API Documentation -->
+        <div class="section">
+            <h2>📚 API Documentation</h2>
+            <h3>Endpoint Overview:</h3>
+            <ul>
+                <li><strong>/api/status</strong> - GET - Check browser status</li>
+                <li><strong>/api/open_notebooklm</strong> - POST - Open specific NotebookLM</li>
+                <li><strong>/api/query_notebooklm</strong> - POST - Submit query and get response</li>
+                <li><strong>/api/close_browser</strong> - POST - Close browser instance</li>
+            </ul>
+            
+            <h3>Usage Flow:</h3>
+            <ol>
+                <li>Check status to see if browser is already running</li>
+                <li>Open NotebookLM with a specific URL</li>
+                <li>Submit queries and wait for responses</li>
+                <li>Close browser when done</li>
+            </ol>
+
+            <h3>Features:</h3>
+            <ul>
+                <li>✅ Bypasses Google automation detection</li>
+                <li>✅ Waits for dynamic content generation to complete</li>
+                <li>✅ Automatically finds and clicks copy buttons</li>
+                <li>✅ Returns extracted response content</li>
+                <li>✅ Handles authentication redirects</li>
+                <li>✅ Thread-safe browser management</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api';
+        let isLoading = false;
+
+        // Helper function to display results with styling
+        function displayResult(elementId, data, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = type;
+        }
+
+        // Helper function to display errors
+        function displayError(elementId, error) {
+            const element = document.getElementById(elementId);
+            element.textContent = `Error: ${error.message || error}`;
+            element.className = 'error';
+        }
+
+        // Helper function to show loading state
+        function setLoading(buttonElement, isLoading) {
+            if (isLoading) {
+                buttonElement.disabled = true;
+                buttonElement.innerHTML += '<span class="loading"></span>';
+            } else {
+                buttonElement.disabled = false;
+                const loading = buttonElement.querySelector('.loading');
+                if (loading) loading.remove();
+            }
+        }
+
+        // Check browser status
+        async function checkStatus() {
+            const resultElementId = 'status-result';
+            const button = event.target;
+            
+            try {
+                setLoading(button, true);
+                const response = await fetch(`${API_BASE_URL}/status`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    displayError(resultElementId, data);
+                    return;
+                }
+                
+                const type = data.browser_active ? 'success' : 'warning';
+                displayResult(resultElementId, data, type);
+            } catch (error) {
+                displayError(resultElementId, error);
+            } finally {
+                setLoading(button, false);
+            }
+        }
+
+        // Open NotebookLM
+        async function openNotebookLM() {
+            const resultElementId = 'open-result';
+            const button = event.target;
+            const url = document.getElementById('notebooklm-url').value;
+            
+            if (!url) {
+                displayError(resultElementId, 'NotebookLM URL is required');
+                return;
+            }
+            
+            try {
+                setLoading(button, true);
+                const response = await fetch(`${API_BASE_URL}/open_notebooklm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notebooklm_url: url })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        displayResult(resultElementId, data, 'warning');
+                    } else {
+                        displayError(resultElementId, data);
+                    }
+                    return;
+                }
+                
+                displayResult(resultElementId, data, 'success');
+            } catch (error) {
+                displayError(resultElementId, error);
+            } finally {
+                setLoading(button, false);
+            }
+        }
+
+        // Query NotebookLM
+        async function queryNotebookLM() {
+            const resultElementId = 'query-result';
+            const button = event.target;
+            const query = document.getElementById('query-text').value;
+            
+            if (!query) {
+                displayError(resultElementId, 'Query text is required');
+                return;
+            }
+            
+            try {
+                setLoading(button, true);
+                
+                // Show initial message
+                document.getElementById(resultElementId).textContent = 'Submitting query and waiting for response... This may take 30-60 seconds.';
+                document.getElementById(resultElementId).className = 'warning';
+                
+                const response = await fetch(`${API_BASE_URL}/query_notebooklm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    displayError(resultElementId, data);
+                    return;
+                }
+                
+                displayResult(resultElementId, data, 'success');
+            } catch (error) {
+                displayError(resultElementId, error);
+            } finally {
+                setLoading(button, false);
+            }
+        }
+
+        // Close browser
+        async function closeBrowser() {
+            const resultElementId = 'close-result';
+            const button = event.target;
+            
+            try {
+                setLoading(button, true);
+                const response = await fetch(`${API_BASE_URL}/close_browser`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    displayError(resultElementId, data);
+                    return;
+                }
+                
+                displayResult(resultElementId, data, 'success');
+            } catch (error) {
+                displayError(resultElementId, error);
+            } finally {
+                setLoading(button, false);
+            }
+        }
+
+        // Auto-check status on page load
+        window.addEventListener('load', function() {
+            setTimeout(checkStatus, 1000);
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Selenium Chrome standalone container
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium-chrome
+    ports:
+      - "4444:4444"
+      - "7900:7900"  # VNC port for debugging (optional)
+    environment:
+      - SE_VNC_NO_PASSWORD=1
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - notebooklm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Flask application
+  notebooklm-api:
+    build: .
+    container_name: notebooklm-api
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SELENIUM_HUB_URL=http://selenium-chrome:4444/wd/hub
+    depends_on:
+      selenium-chrome:
+        condition: service_healthy
+    networks:
+      - notebooklm-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  notebooklm-network:
+    driver: bridge
+
+volumes:
+  selenium-data:
+
