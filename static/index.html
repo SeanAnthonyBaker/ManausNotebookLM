@@ -5,6 +5,8 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NotebookLM Automation API</title>
+    <meta name="description" content="A web interface for the NotebookLM Automation API, allowing users to control a headless Chrome browser to interact with Google NotebookLM.">
+    <link rel="preconnect" href="/api" crossorigin>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -146,7 +148,7 @@
             <div class="endpoint-info">
                 <strong>GET /api/status</strong> - Check the current status of the browser instance
             </div>
-            <button class="status-button" onclick="checkStatus()">Check Status</button>
+            <button class="status-button" onclick="checkStatus()" aria-label="Check browser status">Check Status</button>
             <pre id="status-result"></pre>
         </div>
 
@@ -160,7 +162,7 @@
             <input type="url" id="notebooklm-url" name="notebooklm_url" 
                    placeholder="https://notebooklm.google.com/notebook/..." 
                    value="https://notebooklm.google.com/">
-            <button onclick="openNotebookLM()">Open NotebookLM</button>
+            <button onclick="openNotebookLM()" aria-label="Open NotebookLM">Open NotebookLM</button>
             <pre id="open-result"></pre>
         </div>
 
@@ -173,7 +175,7 @@
             <label for="query-text">Your Question:</label>
             <textarea id="query-text" name="query" 
                       placeholder="Enter your question for NotebookLM here...">What are the main topics covered in the uploaded documents?</textarea>
-            <button onclick="queryNotebookLM()">Submit Query</button>
+            <button onclick="queryNotebookLM()" aria-label="Submit query to NotebookLM">Submit Query</button>
             <pre id="query-result"></pre>
         </div>
 
@@ -183,7 +185,7 @@
             <div class="endpoint-info">
                 <strong>POST /api/close_browser</strong> - Closes the Chrome driver and cleans up resources
             </div>
-            <button class="close-button" onclick="closeBrowser()">Close Browser</button>
+            <button class="close-button" onclick="closeBrowser()" aria-label="Close browser instance">Close Browser</button>
             <pre id="close-result"></pre>
         </div>
 
@@ -383,4 +385,3 @@
     </script>
 </body>
 </html>
-

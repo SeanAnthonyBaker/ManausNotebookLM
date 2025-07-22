@@ -56,19 +56,14 @@
   ];
 
   # Preview configuration for the Flask app
+  # When using docker-compose, Firebase Studio should ideally detect exposed ports automatically.
+  # The 'command' here is typically for applications run directly by Nix, not Docker.
   idx.previews = {
     enable = true;
     previews = {
       web = {
-        command = [
-          "python"
-          "src/main.py"
-        ];
+        # No 'command' here, rely on Docker Compose
         manager = "web";
-        env = {
-          PORT = "$PORT";
-          FLASK_ENV = "development";
-        };
       };
     };
   };
@@ -76,22 +71,21 @@
   # Workspace configuration
   idx.workspace = {
     onCreate = {
-      # Install Python dependencies
+      # Install Python dependencies - This might be redundant if Dockerfile handles it, but keeping for safety.
       install-deps = "cd /workspace/notebooklm-automation && python -m pip install -r requirements.txt";
-      
+
       # Make scripts executable
       make-executable = "cd /workspace/notebooklm-automation && chmod +x start.sh stop.sh";
-      
+
       # Create environment file from example
       setup-env = "cd /workspace/notebooklm-automation && cp .env.example .env";
     };
-    
+
     onStart = {
-      # Start Docker daemon (if not already running)
-      start-docker = "sudo service docker start || true";
-      
       # Pull required Docker images
       pull-images = "cd /workspace/notebooklm-automation && docker-compose pull || true";
+      # Start Docker Compose services
+      start-docker-services = "cd /workspace/notebooklm-automation && docker-compose up -d";
     };
   };
 
@@ -102,4 +96,3 @@
     };
   };
 }
-

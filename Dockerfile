@@ -26,7 +26,7 @@ USER appuser
 EXPOSE 5000
 
 # Set environment variables
-ENV FLASK_APP=src/main.py
+ENV FLASK_APP=main.py
 ENV FLASK_ENV=production
 ENV PYTHONPATH=/app
 
@@ -35,5 +35,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/api/status || exit 1
 
 # Run the application
-CMD ["python", "src/main.py"]
-
+CMD ["python", "main.py"]

@@ -24,6 +24,10 @@ def create_undetected_driver():
     """Create a Chrome driver with options to bypass automation detection"""
     chrome_options = Options()
     
+    # Use a persistent user profile
+    chrome_options.add_argument('--user-data-dir=/data/user-data')
+    chrome_options.add_argument('--profile-directory=Default')
+    
     # Basic options for headless operation
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
@@ -92,7 +96,7 @@ def open_notebooklm():
             if 'accounts.google.com' in current_url or 'signin' in current_url.lower():
                 logger.warning("Redirected to Google sign-in page")
                 return jsonify({
-                    'error': 'Redirected to Google sign-in page. Authentication required.',
+                    'error': 'Redirected to Google sign-in page. Authentication required. Please log in using VNC.',
                     'current_url': current_url,
                     'status': 'authentication_required'
                 }), 401

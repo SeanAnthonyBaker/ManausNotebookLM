@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   # Selenium Chrome standalone container
   selenium-chrome:
     image: selenium/standalone-chrome:latest
+    user: root
     container_name: selenium-chrome
     ports:
       - "4444:4444"
@@ -15,6 +14,7 @@ services:
       - SE_NODE_OVERRIDE_MAX_SESSIONS=true
     volumes:
       - /dev/shm:/dev/shm
+      - selenium-data:/data
     networks:
       - notebooklm-network
     restart: unless-stopped
@@ -30,7 +30,7 @@ services:
     build: .
     container_name: notebooklm-api
     ports:
-      - "5000:5000"
+      - "${PORT:-5000}:5000"
     environment:
       - FLASK_ENV=production
       - SELENIUM_HUB_URL=http://selenium-chrome:4444/wd/hub
@@ -39,13 +39,7 @@ services:
         condition: service_healthy
     networks:
       - notebooklm-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/status"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+    command: ["python", "main.py"]
 
 networks:
   notebooklm-network:
@@ -53,4 +47,3 @@ networks:
 
 volumes:
   selenium-data:
-
