@@ -29,17 +29,18 @@ services:
   notebooklm-api:
     build: .
     container_name: notebooklm-api
-    ports:
-      - "${PORT:-5000}:5000"
+    # The port is now managed by the web preview, no need to publish it here.
+    ports: []
     environment:
       - FLASK_ENV=production
       - SELENIUM_HUB_URL=http://selenium-chrome:4444/wd/hub
+      - PORT=${PORT:-5000} # Use the PORT variable from the environment
     depends_on:
       selenium-chrome:
         condition: service_healthy
     networks:
       - notebooklm-network
-    command: ["python", "main.py"]
+    command: ["python", "main.py", "--port", "${PORT:-5000}"]
 
 networks:
   notebooklm-network:

@@ -1,56 +1,34 @@
-# To learn more about how to use Nix to configure your environment
-# see: https://developers.google.com/idx/guides/customize-idx-env
 { pkgs, ... }: {
-  # Which nixpkgs channel to use.
-  channel = "stable-24.05"; # or "unstable"
+  # Nix language channel
+  channel = "stable-24.05";
 
-  # Use https://search.nixos.org/packages to find packages
+  # Enable the Docker daemon service. This is required to run Docker containers.
+  services.docker.enable = true;
+
+  # Define the packages needed for the development environment.
   packages = [
-    pkgs.python311
-    pkgs.python311Packages.pip
-    pkgs.docker
     pkgs.docker-compose
+    pkgs.docker
+    pkgs.python3
+    pkgs.python3Packages.pip
+    pkgs.nodejs_20
   ];
 
-  # Sets environment variables in the workspace
-  env = {
-    # Set the PORT environment variable for the web preview
-    PORT = "5000";
+  # Define recommended VS Code extensions.
+  idx.extensions = [
+    "ms-python.python"
+    "ms-azuretools.vscode-docker"
+    "dbaeumer.vscode-eslint"
+  ];
+
+  # Disable previews since you are using start.sh
+  idx.previews = {
+    enable = false;
   };
 
-  idx = {
-    # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
-    extensions = [
-      "ms-python.python"
-      "ms-azuretools.vscode-docker"
-    ];
-
-    # Enable previews
-    previews = {
-      enable = true;
-      previews = {
-        # This will be the name of the preview
-        web = {
-          # The command to run your application
-          command = [ "python" "main.py" ];
-          # What to do with the output of the command
-          manager = "web";
-        };
-      };
-    };
-
-    # Workspace lifecycle hooks
-    workspace = {
-      # Runs when a workspace is first created
-      onCreate = {
-        install-deps = "pip install -r requirements.txt";
-        create-db-dir = "mkdir -p database";
-      };
-    };
-  };
-
-  # Enable the docker service
-  services.docker = {
-    enable = true;
+  # No specific workspace hooks needed for this setup
+  idx.workspace = {
+    onCreate = {};
+    onStart = {};
   };
 }

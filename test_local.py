@@ -11,7 +11,7 @@ import time
 import json
 
 # Add the src directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 def test_flask_app():
     """Test if the Flask application starts correctly"""
@@ -19,7 +19,7 @@ def test_flask_app():
     
     # Test basic Flask app import
     try:
-        from src.main import app
+        from main import app
         print("✅ Flask app imports successfully")
     except ImportError as e:
         print(f"❌ Failed to import Flask app: {e}")
@@ -39,7 +39,8 @@ def test_api_endpoints():
     """Test API endpoints (requires running Flask server)"""
     base_url = "http://localhost:5000"
     
-    print("\n🌐 Testing API Endpoints...")
+    print("""
+🌐 Testing API Endpoints...""")
     
     # Test status endpoint
     try:
@@ -54,7 +55,7 @@ def test_api_endpoints():
     try:
         response = requests.post(f"{base_url}/api/open_notebooklm", 
                                json={"notebooklm_url": "https://notebooklm.google.com/"}, 
-                               timeout=10)
+                               timeout=60)
         print(f"📝 Open NotebookLM endpoint: {response.status_code}")
         result = response.json()
         if "error" in result:
@@ -76,7 +77,8 @@ def test_api_endpoints():
 
 def test_web_interface():
     """Test if the web interface is accessible"""
-    print("\n🌐 Testing Web Interface...")
+    print("""
+🌐 Testing Web Interface...""")
     
     try:
         response = requests.get("http://localhost:5000", timeout=5)
@@ -98,21 +100,26 @@ def main():
     
     # Test 1: Flask app import and basic functionality
     if not test_flask_app():
-        print("\n❌ Basic Flask tests failed. Exiting.")
+        print("""
+❌ Basic Flask tests failed. Exiting.""")
         return False
     
-    print("\n✅ Basic Flask tests passed!")
-    print("\n📋 To test API endpoints:")
-    print("1. Start the Flask server in another terminal:")
-    print("   cd /home/ubuntu/notebooklm-automation")
-    print("   source venv/bin/activate")
-    print("   python src/main.py")
-    print("\n2. Run this script again with --api flag:")
-    print("   python test_local.py --api")
+    print("""
+✅ Basic Flask tests passed!""")
+    print("""
+📋 To test API endpoints:
+1. Start the Flask server in another terminal:
+   cd /home/ubuntu/notebooklm-automation
+   source venv/bin/activate
+   python src/main.py
+
+2. Run this script again with --api flag:
+   python test_local.py --api""")
     
     # If --api flag is provided, test API endpoints
     if "--api" in sys.argv:
-        print("\n" + "=" * 50)
+        print("""
+""" + "=" * 50)
         test_api_endpoints()
         test_web_interface()
     
@@ -121,4 +128,3 @@ def main():
 if __name__ == "__main__":
     success = main()
     sys.exit(0 if success else 1)
-

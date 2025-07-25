@@ -7,12 +7,6 @@ set -e
 
 echo "🚀 Starting NotebookLM Automation Services..."
 
-# Check if Docker is running
-if ! docker info > /dev/null 2>&1; then
-    echo "❌ Docker is not running. Please start Docker first."
-    exit 1
-fi
-
 # Check if docker-compose is available
 if ! command -v docker-compose &> /dev/null; then
     echo "❌ docker-compose is not installed. Please install docker-compose first."
@@ -65,4 +59,3 @@ echo ""
 echo "🛑 To stop services: docker-compose down"
 echo "📊 To view logs: docker-compose logs -f"
 echo "🔍 To check status: docker-compose ps"
-
