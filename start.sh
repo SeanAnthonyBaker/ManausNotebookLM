@@ -26,11 +26,11 @@ echo "⏳ Waiting for services to become healthy..."
 
 for i in {1..30}; do
     # Check if selenium is healthy
-    if [ "$(docker-compose ps -q selenium | xargs docker inspect -f '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; then
-        echo "✅ Selenium Chrome is ready at http://localhost:4444"
+    selenium_id=$(docker-compose ps -q selenium)
+    if [ -n "$selenium_id" ] && [ "$(docker inspect -f '{{.State.Health.Status}}' "$selenium_id" 2>/dev/null)" = "healthy" ]; then
         # Now check if the app is healthy
-        if [ "$(docker-compose ps -q app | xargs docker inspect -f '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; then
-            echo "✅ Flask API is ready at http://localhost:5000"
+        app_id=$(docker-compose ps -q app)
+        if [ -n "$app_id" ] && [ "$(docker inspect -f '{{.State.Health.Status}}' "$app_id" 2>/dev/null)" = "healthy" ]; then
             break
         fi
     fi
@@ -47,20 +47,10 @@ if [ "$i" -eq 30 ]; then
     exit 1
 fi
 
-echo ""
-echo "🎉 Services are starting up!"
-echo ""
+echo "" # Newline for cleaner output
+echo "✅ All services are healthy and running!"
 echo "📋 Service URLs:"
 echo "   • Flask API: http://localhost:5000"
 echo "   • API Status: http://localhost:5000/api/get_status"
 echo "   • Selenium Hub: http://localhost:4444"
 echo "   • VNC Viewer: http://localhost:7900 (password: secret)"
-echo ""
-echo "📖 Usage:"
-echo "   1. Open http://localhost:5000 in your browser"
-echo "   2. Use the web interface to test the API endpoints"
-echo "   3. Or make direct API calls to http://localhost:5000/api/"
-echo ""
-echo "🛑 To stop services: docker-compose down"
-echo "📊 To view logs: docker-compose logs -f"
-echo "🔍 To check status: docker-compose ps"

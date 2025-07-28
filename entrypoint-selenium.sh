@@ -47,6 +47,10 @@ if [ -z "$(ls -A $PROFILE_DIR 2>/dev/null)" ]; then
       exit 1
     }
     echo "Downloading profile from $CHROME_PROFILE_GCS_PATH to $PROFILE_DIR..."
+    # Ensure the destination directory exists before copying.
+    echo "Ensuring destination directory '$PROFILE_DIR' exists..."
+    mkdir -p "$PROFILE_DIR"
+
     gcloud storage cp -r "${CHROME_PROFILE_GCS_PATH}/*" "$PROFILE_DIR/" --quiet || {
       echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
       echo "ERROR: Failed to download Chrome profile from GCS path: $CHROME_PROFILE_GCS_PATH"

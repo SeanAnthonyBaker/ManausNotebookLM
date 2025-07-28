@@ -413,3 +413,31 @@ def get_screenshot():
         except Exception as e:
             logger.error(f"Error taking screenshot: {str(e)}")
             return jsonify({'error': f'Failed to take screenshot: {str(e)}'}), 500
+
+@notebooklm_bp.route('/page_title', methods=['GET'])
+def get_page_title():
+    """
+    Returns the title of the currently active page in the browser.
+    """
+    global browser_instance
+    
+    with browser_lock:
+        if not browser_instance:
+            return jsonify({'error': 'Browser not initialized.'}), 400
+        
+        try:
+            title = browser_instance.title
+            logger.info(f"Retrieved page title: '{title}'")
+            return jsonify({
+                'success': True,
+                'page_title': title
+            })
+        except Exception as e:
+            logger.error(f"Browser instance is unresponsive while getting title, marking as inactive. Error: {e}")
+            browser_instance = None # Clean up the dead instance
+            start_browser_initialization_thread() # Attempt to self-heal by restarting initialization
+            return jsonify({
+                'browser_active': False,
+                'status': 'inactive',
+                'error': f"Browser was unresponsive while getting title. Details: {str(e)}"
+            }), 503 # Service Unavailable

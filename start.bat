@@ -71,16 +71,24 @@ echo ^> Waiting for services to become healthy...
 set "HEALTHY=false"
 for /l %%i in (1,1,30) do (
     set "SELENIUM_STATUS="
-    for /f "tokens=*" %%s in ('docker-compose ps -q selenium 2^>nul ^| findstr . ^| xargs docker inspect -f "{{.State.Health.Status}}" 2^>nul') do (
-        set "SELENIUM_STATUS=%%s"
+    REM Get selenium container ID and then inspect it. This avoids using 'xargs', which is not native to Windows.
+    for /f "tokens=*" %%c in ('docker-compose ps -q selenium 2^>nul') do (
+        for /f "tokens=*" %%s in ('docker inspect -f "{{.State.Health.Status}}" %%c 2^>nul') do (
+            set "SELENIUM_STATUS=%%s"
+        )
     )
 
-    if "!SELENIUM_STATUS!"=="healthy" (
+    echo !SELENIUM_STATUS! | findstr /I "healthy" >nul
+    if !errorlevel! equ 0 (
         set "APP_STATUS="
-        for /f "tokens=*" %%a in ('docker-compose ps -q app 2^>nul ^| findstr . ^| xargs docker inspect -f "{{.State.Health.Status}}" 2^>nul') do (
-            set "APP_STATUS=%%a"
+        REM Get app container ID and then inspect it.
+        for /f "tokens=*" %%d in ('docker-compose ps -q app 2^>nul') do (
+            for /f "tokens=*" %%a in ('docker inspect -f "{{.State.Health.Status}}" %%d 2^>nul') do (
+                set "APP_STATUS=%%a"
+            )
         )
-        if "!APP_STATUS!"=="healthy" (
+        echo !APP_STATUS! | findstr /I "healthy" >nul
+        if !errorlevel! equ 0 (
             set "HEALTHY=true"
             goto :services_ready
         )
@@ -99,6 +107,7 @@ if "%HEALTHY%"=="true" (
     echo [INFO]   - Flask API: http://localhost:5000
     echo [INFO]   - API Status: http://localhost:5000/api/get_status
     echo [INFO]   - VNC Viewer: http://localhost:7900 (password: secret)
+    goto :end_script
 ) else (
     echo.
     echo [ERROR] One or more services failed to become healthy in time.
@@ -112,5 +121,6 @@ if "%HEALTHY%"=="true" (
     echo [INFO]  Please check the logs above for the specific error.
 )
 
+:end_script
 popd
 endlocal

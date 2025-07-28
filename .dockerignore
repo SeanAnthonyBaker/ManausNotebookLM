@@ -53,10 +53,6 @@ README.md
 docs/
 
 # Development files
-.dockerignore
-Dockerfile
-docker-compose.yml
-docker-compose.*.yml
 
 # Database files (if any)
 *.db
@@ -70,4 +66,3 @@ logs/
 # Temporary files
 tmp/
 temp/
-

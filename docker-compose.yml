@@ -27,7 +27,7 @@ services:
     shm_size: '2g'
     environment:
       # This is the GCS path the entrypoint script will use to download the profile
-      - CHROME_PROFILE_GCS_PATH=gs://selenium-chrome-profile/chrome_profiles/notebooklm_default/Default
+      - CHROME_PROFILE_GCS_PATH=${CHROME_PROFILE_GCS_PATH}
     volumes:
       # --- For local development, mount your gcloud credentials ---
       # The entrypoint script uses these to download the profile from GCS.
