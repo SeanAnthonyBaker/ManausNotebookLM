@@ -1,13 +1,5 @@
-blinker
-click
-flask
-flask-cors
-flask-sqlalchemy
-itsdangerous
-jinja2
-markupsafe
+Flask
+Flask-Cors
+Flask-SQLAlchemy
 selenium
-sqlalchemy
-typing-extensions
-werkzeug
 requests

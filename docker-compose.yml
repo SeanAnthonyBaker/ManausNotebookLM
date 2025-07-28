@@ -1,50 +1,46 @@
+version: '3.8'
+
 services:
-  # Selenium Chrome standalone container
-  selenium-chrome:
-    image: selenium/standalone-chrome:latest
-    user: root
-    container_name: selenium-chrome
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "4444:4444"
-      - "7900:7900"  # VNC port for debugging (optional)
+      - "5000:5000"
     environment:
-      - SE_VNC_NO_PASSWORD=1
-      - SE_NODE_MAX_SESSIONS=2
-      - SE_NODE_SESSION_TIMEOUT=300
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
-    volumes:
-      - /dev/shm:/dev/shm
-      - selenium-data:/data
-    networks:
-      - notebooklm-network
+      # This tells the Flask app to connect to the 'selenium' service by its network name
+      - SELENIUM_HUB_URL=http://selenium:4444/wd/hub
+      - FLASK_ENV=production
+    depends_on:
+      selenium:
+        condition: service_healthy
     restart: unless-stopped
+
+  selenium:
+    build:
+      context: .
+      dockerfile: Dockerfile.selenium
+    ports:
+      - "4444:4444" # Selenium Hub
+      - "7900:7900" # VNC Web Interface
+      - "5900:5900" # VNC Port
+    shm_size: '2g'
+    environment:
+      # This is the GCS path the entrypoint script will use to download the profile
+      - CHROME_PROFILE_GCS_PATH=gs://selenium-chrome-profile/chrome_profiles/notebooklm_default/Default
+    volumes:
+      # --- For local development, mount your gcloud credentials ---
+      # The entrypoint script uses these to download the profile from GCS.
+      # Choose the line that matches your OS, uncomment it, and update the path if needed.
+      #
+      # For macOS/Linux:
+      # - ~/.config/gcloud:/root/.config/gcloud:ro
+      # For Windows (replace 'seanb' with your username):
+      - ./.gcloud:/gcloud_creds_ro:ro  # Changed this line
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
-  # Flask application
-  notebooklm-api:
-    build: .
-    container_name: notebooklm-api
-    # The port is now managed by the web preview, no need to publish it here.
-    ports: []
-    environment:
-      - FLASK_ENV=production
-      - SELENIUM_HUB_URL=http://selenium-chrome:4444/wd/hub
-      - PORT=${PORT:-5000} # Use the PORT variable from the environment
-    depends_on:
-      selenium-chrome:
-        condition: service_healthy
-    networks:
-      - notebooklm-network
-    command: ["python", "main.py", "--port", "${PORT:-5000}"]
-
-networks:
-  notebooklm-network:
-    driver: bridge
-
-volumes:
-  selenium-data:
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped

@@ -22,24 +22,29 @@ echo "🔨 Building and starting services..."
 docker-compose up --build -d
 
 # Wait for services to be healthy
-echo "⏳ Waiting for services to be ready..."
-sleep 10
+echo "⏳ Waiting for services to become healthy..."
 
-# Check service status
-echo "📊 Checking service status..."
+for i in {1..30}; do
+    # Check if selenium is healthy
+    if [ "$(docker-compose ps -q selenium | xargs docker inspect -f '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; then
+        echo "✅ Selenium Chrome is ready at http://localhost:4444"
+        # Now check if the app is healthy
+        if [ "$(docker-compose ps -q app | xargs docker inspect -f '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; then
+            echo "✅ Flask API is ready at http://localhost:5000"
+            break
+        fi
+    fi
+    echo -n "."
+    sleep 2
+done
 
-# Check Selenium
-if curl -f http://localhost:4444/wd/hub/status > /dev/null 2>&1; then
-    echo "✅ Selenium Chrome is ready at http://localhost:4444"
-else
-    echo "❌ Selenium Chrome is not responding"
-fi
-
-# Check Flask API
-if curl -f http://localhost:5000/api/status > /dev/null 2>&1; then
-    echo "✅ Flask API is ready at http://localhost:5000"
-else
-    echo "❌ Flask API is not responding"
+if [ "$i" -eq 30 ]; then
+    echo ""
+    echo "❌ One or more services failed to become healthy in time."
+    echo "📊 Final service status:"
+    docker-compose ps
+    echo "🪵 To see detailed logs, run: docker-compose logs -f"
+    exit 1
 fi
 
 echo ""
@@ -47,7 +52,7 @@ echo "🎉 Services are starting up!"
 echo ""
 echo "📋 Service URLs:"
 echo "   • Flask API: http://localhost:5000"
-echo "   • API Status: http://localhost:5000/api/status"
+echo "   • API Status: http://localhost:5000/api/get_status"
 echo "   • Selenium Hub: http://localhost:4444"
 echo "   • VNC Viewer: http://localhost:7900 (password: secret)"
 echo ""
