@@ -32,11 +32,14 @@ services:
       # This is the GCS path the entrypoint script will use to download the profile
       - CHROME_PROFILE_GCS_PATH=${CHROME_PROFILE_GCS_PATH}
     volumes:
-      # --- For local development, mount your gcloud credentials ---
-      # The path is relative to the docker-compose.yml file.
-      # Using a direct relative path is more robust on Windows than substituting an
-      # environment variable, which can lead to "too many colons" errors.
+      # This line mounts the local gcloud credentials to the read-only path expected
+      # by the entrypoint-selenium.sh script. The script will then copy these to the
+      # correct writable location inside the container for gcloud/ADC to use.
       - ./.gcloud:/gcloud_creds_ro:ro
+      # Mounts a local directory to persist the entire Chrome user profile.
+      # This is the key to maintaining a logged-in session across container restarts.
+      # Docker will create the 'chrome-data' directory on your host if it doesn't exist.
+      - ./chrome-data:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
       interval: 10s
