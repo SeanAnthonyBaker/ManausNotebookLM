@@ -49,11 +49,20 @@ def test_create_user_duplicate(test_client):
     assert response.status_code == 409
     assert 'error' in response.json
 
-def test_create_user_missing_data(test_client):
-    """Test creating a user with missing required fields."""
-    response = test_client.post('/api/users', json={'username': 'testuser'})
+@pytest.mark.parametrize("payload, expected_error", [
+    ({'username': 'testuser'}, 'email must be a non-empty string'),
+    ({'email': 'test@example.com'}, 'username must be a non-empty string'),
+    ({}, 'username must be a non-empty string'), # username is checked first
+    ({'username': '', 'email': 'test@example.com'}, 'username must be a non-empty string'),
+    ({'username': 'testuser', 'email': '  '}, 'email must be a non-empty string'),
+    ({'username': 'testuser', 'email': 123}, 'email must be a non-empty string'),
+    ({'username': None, 'email': 'test@example.com'}, 'username must be a non-empty string'),
+])
+def test_create_user_invalid_data(test_client, payload, expected_error):
+    """Test creating a user with various invalid or missing data payloads."""
+    response = test_client.post('/api/users', json=payload)
     assert response.status_code == 400
-    assert 'error' in response.json
+    assert expected_error in response.json['error']
 
 def test_get_all_users(test_client):
     """Test retrieving all users."""

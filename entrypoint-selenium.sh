@@ -46,10 +46,7 @@ if [ -z "$(ls -A $PROFILE_DIR 2>/dev/null)" ]; then
       echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
       exit 1
     }
-    echo "Downloading profile from $CHROME_PROFILE_GCS_PATH to $PROFILE_DIR..."
-    # Ensure the destination directory exists before copying.
-    echo "Ensuring destination directory '$PROFILE_DIR' exists..."
-    mkdir -p "$PROFILE_DIR"
+    echo "Downloading profile from $CHROME_PROFILE_GCS_PATH to $PROFILE_DIR (directory created during image build)..."
 
     gcloud storage cp -r "${CHROME_PROFILE_GCS_PATH}/*" "$PROFILE_DIR/" --quiet || {
       echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"

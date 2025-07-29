@@ -12,17 +12,19 @@ def get_users():
 @user_bp.route('/users', methods=['POST'])
 def create_user():
     data = request.json
-    if not data or not data.get('username') or not data.get('email'):
-        return jsonify({'error': 'username and email are required fields'}), 400
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Invalid JSON payload'}), 400
 
-    # Check for non-empty strings
-    if not isinstance(data['username'], str) or not data['username'].strip():
+    username = data.get('username')
+    email = data.get('email')
+
+    if not isinstance(username, str) or not username.strip():
         return jsonify({'error': 'username must be a non-empty string'}), 400
-    if not isinstance(data['email'], str) or not data['email'].strip():
+    if not isinstance(email, str) or not email.strip():
         return jsonify({'error': 'email must be a non-empty string'}), 400
 
     try:
-        user = User(username=data['username'].strip(), email=data['email'].strip())
+        user = User(username=username.strip(), email=email.strip())
         db.session.add(user)
         db.session.commit()
         return jsonify(user.to_dict()), 201
@@ -43,8 +45,18 @@ def update_user(user_id):
         return jsonify({'error': 'Request body cannot be empty'}), 400
 
     try:
-        user.username = data.get('username', user.username).strip()
-        user.email = data.get('email', user.email).strip()
+        if 'username' in data:
+            new_username = data.get('username')
+            if not isinstance(new_username, str) or not new_username.strip():
+                return jsonify({'error': 'username must be a non-empty string'}), 400
+            user.username = new_username.strip()
+        
+        if 'email' in data:
+            new_email = data.get('email')
+            if not isinstance(new_email, str) or not new_email.strip():
+                return jsonify({'error': 'email must be a non-empty string'}), 400
+            user.email = new_email.strip()
+
         db.session.commit()
         return jsonify(user.to_dict())
     except IntegrityError:

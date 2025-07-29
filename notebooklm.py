@@ -62,12 +62,13 @@ def start_browser_initialization_thread():
             initialization_thread = threading.Thread(target=initialize_browser, daemon=True)
             initialization_thread.start()
 
-def initialize_browser(url="https://notebooklm.google.com/", max_retries=3, retry_delay=15):
+def initialize_browser(max_retries=3, retry_delay=15):
     """
     Initializes the browser instance in the background with retries.
     This function is intended to be run in a separate thread on app startup.
     """
     global browser_instance
+    url = os.environ.get('NOTEBOOKLM_BASE_URL', 'https://notebooklm.google.com/')
 
     for attempt in range(max_retries):
         logger.info(f"Browser initialization attempt {attempt + 1}/{max_retries}...")
@@ -134,8 +135,10 @@ def create_undetected_driver():
     # The most aggressive anti-detection flags can cause issues with new browser versions.
     # chrome_options.add_argument('--disable-blink-features=AutomationControlled')
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    # chrome_options.add_experimental_option('useAutomationExtension', False)
-    chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.7204.157 Safari/537.36')
+    
+    default_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.7204.157 Safari/537.36'
+    user_agent = os.environ.get('CHROME_USER_AGENT', default_user_agent)
+    chrome_options.add_argument(f'user-agent={user_agent}')
 
     # Connect to remote Selenium server. Default to localhost for local development.
     selenium_hub_url = os.environ.get('SELENIUM_HUB_URL', 'http://localhost:4444/wd/hub')

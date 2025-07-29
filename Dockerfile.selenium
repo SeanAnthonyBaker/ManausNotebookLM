@@ -6,13 +6,14 @@ USER root
 
 # Install gcloud CLI
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    dos2unix \
     curl \
     gnupg \
     apt-transport-https \
     ca-certificates \
     && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee /etc/apt/sources.list.d/google-cloud-sdk.list \
     && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg \
-    && apt-get update && apt-get install -y google-cloud-cli \
+    && apt-get update && apt-get install -y google-cloud-cli=488.0.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create the data directory for the Chrome profile and set ownership
@@ -22,7 +23,9 @@ RUN mkdir -p /data && \
 
 # Copy the new entrypoint script and make it executable
 COPY entrypoint-selenium.sh /opt/bin/entrypoint-selenium.sh
-RUN chmod +x /opt/bin/entrypoint-selenium.sh
+# Convert line endings from Windows (CRLF) to Unix (LF) and make executable.
+# This prevents "no such file or directory" errors when running the script.
+RUN dos2unix /opt/bin/entrypoint-selenium.sh && chmod +x /opt/bin/entrypoint-selenium.sh
 
 # Switch back to the default selenium user
 USER seluser

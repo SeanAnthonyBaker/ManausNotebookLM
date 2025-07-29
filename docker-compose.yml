@@ -11,6 +11,9 @@ services:
       # This tells the Flask app to connect to the 'selenium' service by its network name
       - SELENIUM_HUB_URL=http://selenium:4444/wd/hub
       - FLASK_ENV=production
+      - CHROME_USER_AGENT=${CHROME_USER_AGENT}
+      - NOTEBOOKLM_BASE_URL=${NOTEBOOKLM_BASE_URL}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY}
     depends_on:
       selenium:
         condition: service_healthy
@@ -30,13 +33,10 @@ services:
       - CHROME_PROFILE_GCS_PATH=${CHROME_PROFILE_GCS_PATH}
     volumes:
       # --- For local development, mount your gcloud credentials ---
-      # The entrypoint script uses these to download the profile from GCS.
-      # Choose the line that matches your OS, uncomment it, and update the path if needed.
-      #
-      # For macOS/Linux:
-      # - ~/.config/gcloud:/root/.config/gcloud:ro
-      # For Windows (replace 'seanb' with your username):
-      - ./.gcloud:/gcloud_creds_ro:ro  # Changed this line
+      # The path is relative to the docker-compose.yml file.
+      # Using a direct relative path is more robust on Windows than substituting an
+      # environment variable, which can lead to "too many colons" errors.
+      - ./.gcloud:/gcloud_creds_ro:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
       interval: 10s

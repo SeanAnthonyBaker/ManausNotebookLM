@@ -51,6 +51,6 @@ echo "" # Newline for cleaner output
 echo "✅ All services are healthy and running!"
 echo "📋 Service URLs:"
 echo "   • Flask API: http://localhost:5000"
-echo "   • API Status: http://localhost:5000/api/get_status"
+echo "   • API Status: http://localhost:5000/api/status"
 echo "   • Selenium Hub: http://localhost:4444"
 echo "   • VNC Viewer: http://localhost:7900 (password: secret)"
